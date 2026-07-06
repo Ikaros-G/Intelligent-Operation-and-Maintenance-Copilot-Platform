@@ -1,0 +1,12 @@
+{
+  "title": "AIOps Copilot Overview",
+  "uid": "aiops-overview",
+  "schemaVersion": 41,
+  "refresh": "15s",
+  "panels": [
+    {"type":"timeseries","title":"HTTP request rate","gridPos":{"h":8,"w":12,"x":0,"y":0},"targets":[{"expr":"sum by (route) (rate(aiops_http_requests_total[5m]))"}]},
+    {"type":"timeseries","title":"HTTP p95 latency","gridPos":{"h":8,"w":12,"x":12,"y":0},"targets":[{"expr":"histogram_quantile(0.95, sum by (le, route) (rate(aiops_http_request_duration_seconds_bucket[5m])))"}]},
+    {"type":"timeseries","title":"Tool success and degradation","gridPos":{"h":8,"w":12,"x":0,"y":8},"targets":[{"expr":"sum by (tool, status) (rate(aiops_tool_calls_total[5m]))"}]},
+    {"type":"timeseries","title":"Workflow p95 latency","gridPos":{"h":8,"w":12,"x":12,"y":8},"targets":[{"expr":"histogram_quantile(0.95, sum by (le, status) (rate(aiops_workflow_duration_seconds_bucket[5m])))"}]}
+  ]
+}
