@@ -144,6 +144,8 @@ Copy-Item .env.example .env
 
 ```env
 DASHSCOPE_API_KEY=你的 DashScope Key
+TENCENTCLOUD_SECRET_ID=你的腾讯云服务 ID
+TENCENTCLOUD_SECRET_KEY=你的腾讯云服务 Key
 OPS_API_KEY=用于高权限操作审核的长随机密钥
 MINIO_ROOT_USER=自定义 MinIO 用户名
 MINIO_ROOT_PASSWORD=自定义 MinIO 密码
