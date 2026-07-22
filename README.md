@@ -436,14 +436,6 @@ curl http://localhost:9900/api/tasks/你的任务ID
 
 如果任务失败，通常需要检查 DashScope Key、Milvus 连接和文档格式。
 
-### 4. AIOps 诊断没有调用真实生产系统
-
-当前 `mcp_servers/` 中的日志和监控工具主要用于演示和本地开发，部分数据是 Mock 数据。接入真实环境时，需要把 `cls_server.py` 和 `monitor_server.py` 中的查询逻辑替换为企业内部日志平台、Prometheus、CMDB、服务治理平台或云厂商 API。
-
-### 5. 高风险操作是否真的会重启服务
-
-当前高风险工具是安全演示实现，重点展示权限校验、人工审批和审计链路。生产环境如果接入真实重启、扩缩容、发布回滚等能力，必须保留 Human-in-the-Loop、权限控制和审计记录。
-
 ## 相关文档
 
 - [补充技术说明](docs/supplemental-technologies.md)
