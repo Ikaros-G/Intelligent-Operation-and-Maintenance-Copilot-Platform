@@ -1,0 +1,17 @@
+groups:
+  - name: aiops-copilot
+    rules:
+      - alert: AIOpsHighErrorRate
+        expr: sum(rate(aiops_http_requests_total{status_class="5xx"}[5m])) / clamp_min(sum(rate(aiops_http_requests_total[5m])), 0.001) > 0.05
+        for: 5m
+        labels: {severity: page}
+        annotations:
+          summary: AIOps API 5xx 比例超过 5%
+          runbook_url: /docs/runbooks/aiops-api-errors.md
+      - alert: AIOpsToolFailureRate
+        expr: sum(rate(aiops_tool_calls_total{status=~"error|degraded|timeout"}[10m])) / clamp_min(sum(rate(aiops_tool_calls_total[10m])), 0.001) > 0.10
+        for: 10m
+        labels: {severity: ticket}
+        annotations:
+          summary: Agent 工具失败比例超过 10%
+          runbook_url: /docs/runbooks/tool-failures.md

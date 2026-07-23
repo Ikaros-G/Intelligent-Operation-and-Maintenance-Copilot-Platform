@@ -1,0 +1,202 @@
+{
+  "title": "Container Resource Overview",
+  "uid": "container-resource-overview",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "15s",
+  "timezone": "browser",
+  "tags": ["aiops", "containers", "cadvisor"],
+  "time": {"from": "now-1h", "to": "now"},
+  "templating": {
+    "list": [
+      {
+        "name": "container",
+        "label": "Container",
+        "type": "query",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "definition": "label_values(container_last_seen{name=~\"aiops-api|aiops-celery-worker|aiops-mcp-monitor|aiops-mcp-cls|milvus-standalone|aiops-redis\"}, name)",
+        "query": {
+          "query": "label_values(container_last_seen{name=~\"aiops-api|aiops-celery-worker|aiops-mcp-monitor|aiops-mcp-cls|milvus-standalone|aiops-redis\"}, name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "includeAll": true,
+        "allValue": "aiops-api|aiops-celery-worker|aiops-mcp-monitor|aiops-mcp-cls|milvus-standalone|aiops-redis",
+        "multi": true,
+        "refresh": 1,
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Container availability",
+      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (name) (time() - container_last_seen{job=\"cadvisor\",name=~\"$container\"})",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "red", "value": 45}]}
+        },
+        "overrides": []
+      },
+      "options": {"showHeader": true, "cellHeight": "sm"}
+    },
+    {
+      "id": 2,
+      "type": "bargauge",
+      "title": "Current CPU usage",
+      "gridPos": {"h": 7, "w": 8, "x": 8, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\",name=~\"$container\"}[5m])) * 100",
+          "instant": true,
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green"}, {"color": "yellow", "value": 60}, {"color": "red", "value": 80}]}
+        },
+        "overrides": []
+      },
+      "options": {"displayMode": "gradient", "orientation": "horizontal", "showUnfilled": true}
+    },
+    {
+      "id": 3,
+      "type": "bargauge",
+      "title": "Current memory working set",
+      "gridPos": {"h": 7, "w": 8, "x": 16, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (name) (container_memory_working_set_bytes{job=\"cadvisor\",name=~\"$container\"})",
+          "instant": true,
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "bytes", "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "blue"}]}},
+        "overrides": []
+      },
+      "options": {"displayMode": "gradient", "orientation": "horizontal", "showUnfilled": true}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "CPU usage trend",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 7},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{job=\"cadvisor\",name=~\"$container\"}[5m])) * 100",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max", "mean"]}}
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Memory working set trend",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 7},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (name) (container_memory_working_set_bytes{job=\"cadvisor\",name=~\"$container\"})",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "bytes", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max", "mean"]}}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Network receive / transmit",
+      "gridPos": {"h": 9, "w": 12, "x": 0, "y": 16},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (name) (rate(container_network_receive_bytes_total{job=\"cadvisor\",name=~\"$container\"}[5m]))",
+          "legendFormat": "{{name}} receive"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (name) (rate(container_network_transmit_bytes_total{job=\"cadvisor\",name=~\"$container\"}[5m]))",
+          "legendFormat": "{{name}} transmit"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "Bps", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Filesystem read / write",
+      "gridPos": {"h": 9, "w": 12, "x": 12, "y": 16},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (name) (rate(container_fs_reads_bytes_total{job=\"cadvisor\",name=~\"$container\"}[5m]))",
+          "legendFormat": "{{name}} read"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (name) (rate(container_fs_writes_bytes_total{job=\"cadvisor\",name=~\"$container\"}[5m]))",
+          "legendFormat": "{{name}} write"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "Bps", "min": 0}, "overrides": []},
+      "options": {"legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Container start time",
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 25},
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max by (name) (container_start_time_seconds{job=\"cadvisor\",name=~\"$container\"}) * 1000",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {"Time": true},
+            "indexByName": {"name": 0, "Value": 1},
+            "renameByName": {"name": "Container", "Value": "Started at"}
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "Started at"},
+            "properties": [{"id": "unit", "value": "dateTimeAsIso"}]
+          }
+        ]
+      },
+      "options": {"showHeader": true, "cellHeight": "sm"}
+    }
+  ]
+}
